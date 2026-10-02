@@ -1,0 +1,64 @@
+[
+  {
+    "name": "Modèle — accusé de réception",
+    "triggerType": "mail_received",
+    "triggerConfig": "{}",
+    "steps": {
+      "v": 2,
+      "nodes": [
+        { "id": "trigger", "kind": "trigger", "x": 80, "y": 140 },
+        { "id": "draft", "kind": "draft_email", "x": 360, "y": 140, "step": { "type": "draft_email", "subject": "Bien reçu : {{subject}}", "body": "Bonjour,\n\nNous avons bien reçu votre message et revenons vers vous rapidement.\n\nBien cordialement" } }
+      ],
+      "edges": [{ "id": "e1", "from": "trigger", "to": "draft", "port": "out" }]
+    }
+  },
+  {
+    "name": "Modèle — nouveau prospect",
+    "triggerType": "new_prospect",
+    "triggerConfig": "{}",
+    "steps": {
+      "v": 2,
+      "nodes": [
+        { "id": "trigger", "kind": "trigger", "x": 80, "y": 140 },
+        { "id": "task", "kind": "create_task", "x": 360, "y": 140, "step": { "type": "create_task", "title": "Qualifier {{name}}", "dueDays": 1, "priority": "haute" } },
+        { "id": "mail", "kind": "draft_email", "x": 640, "y": 140, "step": { "type": "draft_email", "subject": "Prise de contact — {{company}}", "body": "Bonjour {{name}},\n\nMerci pour votre intérêt. Je vous propose un point cette semaine.\n\nBien cordialement" } }
+      ],
+      "edges": [
+        { "id": "e1", "from": "trigger", "to": "task", "port": "out" },
+        { "id": "e2", "from": "task", "to": "mail", "port": "out" }
+      ]
+    }
+  },
+  {
+    "name": "Modèle — relance du matin",
+    "triggerType": "schedule",
+    "triggerConfig": "{\"time\":\"09:00\"}",
+    "steps": {
+      "v": 2,
+      "nodes": [
+        { "id": "trigger", "kind": "trigger", "x": 80, "y": 140 },
+        { "id": "note", "kind": "notify", "x": 360, "y": 140, "step": { "type": "notify", "title": "Relances du jour", "body": "Ouvrez Mail CRM, Relances, et traitez les échéances." } }
+      ],
+      "edges": [{ "id": "e1", "from": "trigger", "to": "note", "port": "out" }]
+    }
+  },
+  {
+    "name": "Modèle — prospect ou client",
+    "triggerType": "manual",
+    "triggerConfig": "{}",
+    "steps": {
+      "v": 2,
+      "nodes": [
+        { "id": "trigger", "kind": "trigger", "x": 80, "y": 160 },
+        { "id": "if", "kind": "if", "x": 360, "y": 160, "when": { "field": "type", "op": "eq", "value": "prospect" } },
+        { "id": "yes", "kind": "create_task", "x": 640, "y": 80, "step": { "type": "create_task", "title": "Premier contact {{name}}", "dueDays": 0, "priority": "haute" } },
+        { "id": "no", "kind": "notify", "x": 640, "y": 260, "step": { "type": "notify", "title": "Client {{name}}", "body": "Fiche client déjà connue. Vérifiez les relances." } }
+      ],
+      "edges": [
+        { "id": "e1", "from": "trigger", "to": "if", "port": "out" },
+        { "id": "e2", "from": "if", "to": "yes", "port": "true" },
+        { "id": "e3", "from": "if", "to": "no", "port": "false" }
+      ]
+    }
+  }
+]
